@@ -1,0 +1,137 @@
+
+
+Dataset=physionet, INPUT_DIM=41, history=24
+n_train_batches: 225
+python train_FLD.py -d physionet -ot 24 -bs 32 -lr 1e-3 -es 10 --gpu 0 -fn C --resume auto
+- Epoch 042 | train_loss(one-batch): 0.003363 | val_mse: 0.003855 | val_rmse: 0.062086 | best@32 test_mse: 0.003896 rmse: 0.062421 | time: 8.45s
+Early stopping at epoch 42 (no improvement for 10 epochs).
+Best val MSE: 0.003829 @ epoch 32
+============
+
+Dataset=mimic, INPUT_DIM=96, history=24
+n_train_batches: 440
+python train_FLD.py -d mimic -ot 24 -bs 32 -lr 1e-3 -es 10 --gpu 0 -fn Q
+- Epoch 057 | train_loss(one-batch): 0.006416 | val_mse: 0.008833 | val_rmse: 0.093983 | best@47 test_mse: 0.008921 rmse: 0.094449 | time: 15.62s
+Early stopping at epoch 57 (no improvement for 10 epochs).
+Best val MSE: 0.008557 @ epoch 47
+
+-------------
+python train_FLD.py -d mimic -ot 24 -bs 32 -lr 1e-3 -es 10 --gpu 0 -fn C
+Dataset=mimic, INPUT_DIM=96, history=24
+n_train_batches: 440
+- Epoch 043 | train_loss(one-batch): 0.015431 | val_mse: 0.008447 | val_rmse: 0.091907 | best@33 test_mse: 0.008620 rmse: 0.092842 | time: 16.69s
+Early stopping at epoch 43 (no improvement for 10 epochs).
+Best val MSE: 0.008353 @ epoch 33
+
+--------------
+python train_FLD.py -d mimic -ot 24 -bs 32 -lr 1e-3 -es 10 --gpu 0 -fn L
+Dataset=mimic, INPUT_DIM=96, history=24
+n_train_batches: 440
+- Epoch 036 | train_loss(one-batch): 0.005417 | val_mse: 0.008518 | val_rmse: 0.092295 | best@26 test_mse: 0.008641 rmse: 0.092957 | time: 15.82s
+Early stopping at epoch 36 (no improvement for 10 epochs).
+Best val MSE: 0.008328 @ epoch 26
+--------------
+python train_FLD.py -d mimic -ot 24 -bs 32 -lr 1e-3 -es 10 --gpu 0 -fn S
+- Epoch 034 | train_loss(one-batch): 0.006134 | val_mse: 0.008935 | val_rmse: 0.094527 | best@24 test_mse: 0.008957 rmse: 0.094639 | time: 18.15s
+Early stopping at epoch 34 (no improvement for 10 epochs).
+Best val MSE: 0.008777 @ epoch 24
+
+--------------
+python train_FLD.py -d ushcn -ot 24 -bs 32 -lr 1e-3 -es 10 --gpu 0 -fn L
+Dataset=ushcn, INPUT_DIM=5, history=24
+n_train_batches: 501
+- Epoch 037 | train_loss(one-batch): 0.578977 | val_mse: 0.642063 | val_rmse: 0.801288 | best@27 test_mse: 0.550409 rmse: 0.741896 | time: 22.28s
+Early stopping at epoch 37 (no improvement for 10 epochs).
+Best val MSE: 0.637162 @ epoch 27
+-----------------------------
+python grafiti/train_grafiti.py -d physionet -ot 24 -bs 32 --epochs 100 --early-stop 15 --gpu 0 --attn-head 4 --latent-dim 128 --nlayers 2 --lr 1e-3
+Dataset=physionet, INPUT_DIM=41, history=24
+n_train_batches: 225
+- Epoch 085 | train_loss(one-batch): 0.003029 | val_mse: 0.003368 | val_rmse: 0.058037 | best@70 test_mse: 0.003268 rmse: 0.057168 | time: 39.17s
+Early stopping at epoch 85 (no improvement for 15).
+Best val MSE: 0.003265 @ epoch 70
+Test MSE @ best: 0.003268
+
+-----------------------------------
+python FLD_ICC/train_FLD_ICC.py -d physionet -ot 24 -bs 32 --epochs 100 --early-stop 10 --gpu 0  -fn S --harmonics 2 --use-cycle --cycle-length 24 --time-max-hours 48
+Dataset=physionet, INPUT_DIM=41, history=24
+n_train_batches: 225
+- Epoch 055 | train_loss(one-batch): 0.024202 | val_mse: 0.025224 | val_rmse: 0.158821 | best@45 test_mse: 0.025060 rmse: 0.158303 | time: 10.87s
+Early stopping at epoch 55 (no improvement for 10).
+Best val MSE: 0.024988 @ epoch 45
+--------------------------------------
+python FLD_ICC/train_FLD_ICC.py -d physionet -ot 24 -bs 32 --epochs 100 --early-stop 10 --gpu 0   -fn L -ed 64 -ld 64 -nh 2 --lr 1e-3
+Dataset=physionet, INPUT_DIM=41, history=24
+n_train_batches: 225
+- Epoch 088 | train_loss(one-batch): 0.003780 | val_mse: 0.004184 | val_rmse: 0.064687 | best@78 test_mse: 0.004207 rmse: 0.064864 | time: 9.12s
+Early stopping at epoch 88 (no improvement for 10).
+Best val MSE: 0.004129 @ epoch 78
+
+----------------
+cd FLD_ICC >>> without cycles
+python train_FLD_ICC_ushcn_rcf.py -d ushcn -ot 24 -bs 32 -e 70 -es 20 -fn L -ed 64 -ld 64 -nh 2 -dp 2 --cycle-length 24 --time-max-hours 48  --gpu 0 --tbon --logdir runs --resume auto
+---------------------
+without cycles
+python train_FLD_ICC_ushcn.py -d ushcn -ot 24 -bs 32 -e 70 -es 20 -fn L -ed 64 -ld 64 -nh 2 -dp 2 --gpu 0 --tbon --logdir runs
+
+
+ python train_FLD_ICC_ushcn.py -d ushcn -ot 24 -bs 32 -e 70 -es 20 -fn L -ed 16 -ld 64 -nh 4 -dp 4 --gpu 0 --tbon --logdir "runs/ushcn/icfld_nocycle/20250821_143357/s0_ld64_nh4_eph4_ed16_dp4"
+ 
+- Epoch 013 | train_loss(one-batch): 0.273574 | val_mse: 0.795155 | val_rmse: 0.891715 | best@9 test_mse: 0.553378 rmse: 0.743894 | time: 15.81s
+- Epoch 014 | train_loss(one-batch): 0.304963 | val_mse: 0.797166 | val_rmse: 0.892841 | best@9 test_mse: 0.553378 rmse: 0.743894 | time: 15.89s
+- Epoch 015 | train_loss(one-batch): 0.324429 | val_mse: 0.779973 | val_rmse: 0.883161 | best@9 test_mse: 0.553378 rmse: 0.743894 | time: 16.68s
+- Epoch 016 | train_loss(one-batch): 0.224297 | val_mse: 0.839764 | val_rmse: 0.916386 | best@9 test_mse: 0.553378 rmse: 0.743894 | time: 16.39s
+- Epoch 017 | train_loss(one-batch): 0.524441 | val_mse: 0.835529 | val_rmse: 0.914073 | best@9 test_mse: 0.553378 rmse: 0.743894 | time: 16.12s
+- Epoch 018 | train_loss(one-batch): 1.773392 | val_mse: 0.807985 | val_rmse: 0.898880 | best@9 test_mse: 0.553378 rmse: 0.743894 | time: 15.74s
+- Epoch 019 | train_loss(one-batch): 0.450419 | val_mse: 0.817190 | val_rmse: 0.903986 | best@9 test_mse: 0.553378 rmse: 0.743894 | time: 16.06s
+- Epoch 020 | train_loss(one-batch): 0.447176 | val_mse: 0.769025 | val_rmse: 0.876941 | best@20 test_mse: 0.553625 rmse: 0.744060 | time: 19.61s
+- Epoch 021 | train_loss(one-batch): 0.533190 | val_mse: 0.766251 | val_rmse: 0.875358 | best@21 test_mse: 0.556507 rmse: 0.745994 | time: 19.54s
+- Epoch 022 | train_loss(one-batch): 0.325440 | val_mse: 0.898037 | val_rmse: 0.947648 | best@21 test_mse: 0.556507 rmse: 0.745994 | time: 15.86s
+- Epoch 023 | train_loss(one-batch): 0.749611 | val_mse: 0.765366 | val_rmse: 0.874852 | best@23 test_mse: 0.558622 rmse: 0.747410 | time: 19.78s
+- Epoch 024 | train_loss(one-batch): 0.406815 | val_mse: 0.788084 | val_rmse: 0.887741 | best@23 test_mse: 0.558622 rmse: 0.747410 | time: 16.05s
+- Epoch 025 | train_loss(one-batch): 0.699101 | val_mse: 0.756316 | val_rmse: 0.869664 | best@25 test_mse: 0.553658 rmse: 0.744082 | time: 19.29s
+- Epoch 026 | train_loss(one-batch): 0.395473 | val_mse: 0.763678 | val_rmse: 0.873887 | best@25 test_mse: 0.553658 rmse: 0.744082 | time: 16.03s
+- Epoch 027 | train_loss(one-batch): 0.364356 | val_mse: 0.737519 | val_rmse: 0.858790 | best@27 test_mse: 0.552217 rmse: 0.743113 | time: 19.66s
+- Epoch 028 | train_loss(one-batch): 0.129837 | val_mse: 0.820882 | val_rmse: 0.906026 | best@27 test_mse: 0.552217 rmse: 0.743113 | time: 15.71s
+- Epoch 029 | train_loss(one-batch): 0.632759 | val_mse: 0.760980 | val_rmse: 0.872342 | best@27 test_mse: 0.552217 rmse: 0.743113 | time: 16.04s
+- Epoch 030 | train_loss(one-batch): 0.665681 | val_mse: 0.841215 | val_rmse: 0.917178 | best@27 test_mse: 0.552217 rmse: 0.743113 | time: 16.16s
+- Epoch 031 | train_loss(one-batch): 0.757315 | val_mse: 0.762554 | val_rmse: 0.873243 | best@27 test_mse: 0.552217 rmse: 0.743113 | time: 16.44s
+- Epoch 032 | train_loss(one-batch): 0.278669 | val_mse: 0.762546 | val_rmse: 0.873239 | best@27 test_mse: 0.552217 rmse: 0.743113 | time: 16.59s
+- Epoch 033 | train_loss(one-batch): 0.861179 | val_mse: 0.756762 | val_rmse: 0.869921 | best@27 test_mse: 0.552217 rmse: 0.743113 | time: 16.15s
+- Epoch 034 | train_loss(one-batch): 0.285191 | val_mse: 0.765341 | val_rmse: 0.874838 | best@27 test_mse: 0.552217 rmse: 0.743113 | time: 16.29s
+- Epoch 035 | train_loss(one-batch): 0.850126 | val_mse: 0.834157 | val_rmse: 0.913322 | best@27 test_mse: 0.552217 rmse: 0.743113 | time: 16.02s
+- Epoch 036 | train_loss(one-batch): 0.229554 | val_mse: 0.675718 | val_rmse: 0.822021 | best@36 test_mse: 0.562487 rmse: 0.749992 | time: 20.49s
+- Epoch 037 | train_loss(one-batch): 0.326070 | val_mse: 1.196350 | val_rmse: 1.093778 | best@36 test_mse: 0.562487 rmse: 0.749992 | time: 16.04s
+- Epoch 038 | train_loss(one-batch): 0.388676 | val_mse: 0.780654 | val_rmse: 0.883546 | best@36 test_mse: 0.562487 rmse: 0.749992 | time: 15.82s
+- Epoch 039 | train_loss(one-batch): 0.310183 | val_mse: 0.866229 | val_rmse: 0.930714 | best@36 test_mse: 0.562487 rmse: 0.749992 | time: 16.21s
+- Epoch 040 | train_loss(one-batch): 0.526026 | val_mse: 0.706036 | val_rmse: 0.840259 | best@36 test_mse: 0.562487 rmse: 0.749992 | time: 15.94s
+- Epoch 041 | train_loss(one-batch): 0.462688 | val_mse: 0.691814 | val_rmse: 0.831754 | best@36 test_mse: 0.562487 rmse: 0.749992 | time: 16.34s
+- Epoch 042 | train_loss(one-batch): 0.218938 | val_mse: 0.800493 | val_rmse: 0.894703 | best@36 test_mse: 0.562487 rmse: 0.749992 | time: 16.54s
+- Epoch 043 | train_loss(one-batch): 0.402992 | val_mse: 0.689376 | val_rmse: 0.830286 | best@36 test_mse: 0.562487 rmse: 0.749992 | time: 16.09s
+- Epoch 044 | train_loss(one-batch): 0.540379 | val_mse: 0.800545 | val_rmse: 0.894732 | best@36 test_mse: 0.562487 rmse: 0.749992 | time: 16.24s
+- Epoch 045 | train_loss(one-batch): 0.315671 | val_mse: 0.670585 | val_rmse: 0.818892 | best@45 test_mse: 0.560871 rmse: 0.748913 | time: 20.00s
+- Epoch 046 | train_loss(one-batch): 0.248726 | val_mse: 0.690621 | val_rmse: 0.831036 | best@45 test_mse: 0.560871 rmse: 0.748913 | time: 16.01s
+- Epoch 047 | train_loss(one-batch): 0.681395 | val_mse: 0.697970 | val_rmse: 0.835446 | best@45 test_mse: 0.560871 rmse: 0.748913 | time: 16.11s
+- Epoch 048 | train_loss(one-batch): 0.315160 | val_mse: 0.713451 | val_rmse: 0.844660 | best@45 test_mse: 0.560871 rmse: 0.748913 | time: 15.88s
+- Epoch 049 | train_loss(one-batch): 0.292084 | val_mse: 0.768206 | val_rmse: 0.876474 | best@45 test_mse: 0.560871 rmse: 0.748913 | time: 15.96s
+- Epoch 050 | train_loss(one-batch): 0.299937 | val_mse: 0.769940 | val_rmse: 0.877462 | best@45 test_mse: 0.560871 rmse: 0.748913 | time: 16.11s
+- Epoch 051 | train_loss(one-batch): 0.243891 | val_mse: 0.663168 | val_rmse: 0.814351 | best@51 test_mse: 0.552562 rmse: 0.743345 | time: 19.64s
+- Epoch 052 | train_loss(one-batch): 1.127931 | val_mse: 0.674819 | val_rmse: 0.821474 | best@51 test_mse: 0.552562 rmse: 0.743345 | time: 15.88s
+- Epoch 053 | train_loss(one-batch): 1.086597 | val_mse: 0.683799 | val_rmse: 0.826921 | best@51 test_mse: 0.552562 rmse: 0.743345 | time: 16.04s
+- Epoch 054 | train_loss(one-batch): 0.380025 | val_mse: 0.784361 | val_rmse: 0.885641 | best@51 test_mse: 0.552562 rmse: 0.743345 | time: 15.21s
+- Epoch 055 | train_loss(one-batch): 0.572563 | val_mse: 0.734664 | val_rmse: 0.857125 | best@51 test_mse: 0.552562 rmse: 0.743345 | time: 15.09s
+- Epoch 056 | train_loss(one-batch): 0.594680 | val_mse: 0.695474 | val_rmse: 0.833951 | best@51 test_mse: 0.552562 rmse: 0.743345 | time: 14.97s
+- Epoch 057 | train_loss(one-batch): 0.297041 | val_mse: 0.671721 | val_rmse: 0.819586 | best@51 test_mse: 0.552562 rmse: 0.743345 | time: 15.25s
+- Epoch 058 | train_loss(one-batch): 0.155730 | val_mse: 0.815196 | val_rmse: 0.902882 | best@51 test_mse: 0.552562 rmse: 0.743345 | time: 15.10s
+- Epoch 059 | train_loss(one-batch): 2.694622 | val_mse: 0.775164 | val_rmse: 0.880434 | best@51 test_mse: 0.552562 rmse: 0.743345 | time: 15.31s
+- Epoch 060 | train_loss(one-batch): 1.634905 | val_mse: 0.750307 | val_rmse: 0.866203 | best@51 test_mse: 0.552562 rmse: 0.743345 | time: 14.62s
+- Epoch 061 | train_loss(one-batch): 0.381189 | val_mse: 0.673232 | val_rmse: 0.820507 | best@51 test_mse: 0.552562 rmse: 0.743345 | time: 14.87s
+- Epoch 062 | train_loss(one-batch): 0.243397 | val_mse: 0.660592 | val_rmse: 0.812768 | best@62 test_mse: 0.546659 rmse: 0.739364 | time: 18.23s
+- Epoch 063 | train_loss(one-batch): 0.319080 | val_mse: 0.697988 | val_rmse: 0.835457 | best@62 test_mse: 0.546659 rmse: 0.739364 | time: 14.98s
+- Epoch 064 | train_loss(one-batch): 0.168740 | val_mse: 0.734747 | val_rmse: 0.857174 | best@62 test_mse: 0.546659 rmse: 0.739364 | time: 15.04s
+- Epoch 065 | train_loss(one-batch): 0.725632 | val_mse: 0.784306 | val_rmse: 0.885611 | best@62 test_mse: 0.546659 rmse: 0.739364 | time: 14.93s
+- Epoch 066 | train_loss(one-batch): 0.566557 | val_mse: 0.690567 | val_rmse: 0.831004 | best@62 test_mse: 0.546659 rmse: 0.739364 | time: 15.28s
+- Epoch 067 | train_loss(one-batch): 0.328273 | val_mse: 0.732820 | val_rmse: 0.856049 | best@62 test_mse: 0.546659 rmse: 0.739364 | time: 15.32s
+- Epoch 068 | train_loss(one-batch): 1.868150 | val_mse: 0.721122 | val_rmse: 0.849189 | best@62 test_mse: 0.546659 rmse: 0.739364 | time: 15.09s
+- Epoch 069 | train_loss(one-batch): 0.754152 | val_mse: 0.700942 | val_rmse: 0.837223 | best@62 test_mse: 0.546659 rmse: 0.739364 | time: 15.00s
+- Epoch 070 | train_loss(one-batch): 0.216952 | val_mse: 0.688030 | val_rmse: 0.829475 | best@62 test_mse: 0.546659 rmse: 0.739364 | time: 14.85s
