@@ -40,27 +40,27 @@ Write-Host "==> Logs: $JobLogDir"
 
 # FLD (run from FLD/)
 Run-JobAt "FLD_physionet" "FLD" @"
-python train_FLD.py -d physionet -ot 24 -bs 32 -e 100 -es 10 --gpu $GPU --tbon --logdir $LOGDIR
+python train_FLD.py -d physionet -ot 24 -bs 32 -e 70 -es 30 --gpu $GPU --tbon --logdir $LOGDIR
 "@
 
 # FLD-ICC (run from FLD_ICC/)
 Run-JobAt "FLD_ICC_physionet" "FLD_ICC" @"
-python train_FLD_ICC.py -d physionet -ot 24 -bs 32 --epochs 100 --early-stop 10 --gpu $GPU -fn L -ed 64 -ld 64 -nh 2 --tbon --logdir $LOGDIR
+python train_FLD_ICC.py -d physionet -ot 24 -bs 32 --epochs 70 --early-stop 30 --gpu $GPU -fn L -ed 64 -ld 64 -nh 2 --tbon --logdir $LOGDIR
 "@
 
 # GraFITi (run from grafiti/)
 Run-JobAt "GraFITi_physionet" "grafiti" @"
-python train_grafiti.py -d physionet -ot 24 -bs 32 --epochs 100 --early-stop 10 --gpu $GPU --encoder gratif --tbon --logdir $LOGDIR
+python train_grafiti.py -d physionet -ot 24 -bs 32 --epochs 70 --early-stop 30 --gpu $GPU --encoder gratif --tbon --logdir $LOGDIR
 "@
 
 # mTAN (run from mtan/)
 Run-JobAt "mTAN_physionet" "mtan" @"
-python train_mtan.py -d physionet -ot 24 -bs 32 --niters 100 --early-stop 10 --gpu $GPU --latent-dim 16 --rec-hidden 32 --gen-hidden 50 --embed-time 128 --k-iwae 10 --lr 1e-3 --tbon --logdir $LOGDIR
+python train_mtan.py -d physionet -ot 24 -bs 32 --niters 70 --early-stop 30 --gpu $GPU --latent-dim 16 --rec-hidden 32 --gen-hidden 50 --embed-time 128 --k-iwae 10 --lr 1e-3 --tbon --logdir $LOGDIR
 "@
 
 # t-PatchGNN (run from its own folder)
 Run-JobAt "tPatchGNN_physionet" $TP_DIR @"
-python $TP_SCRIPT --dataset physionet --history 24 --patch_size 8 --stride 8 --batch_size 32 --epoch 100 --patience 10 --gpu $GPU --tbon --logdir $LOGDIR
+python $TP_SCRIPT --dataset physionet --history 24 --patch_size 8 --stride 8 --batch_size 32 --epoch 70 --patience 10 --gpu $GPU --tbon --logdir $LOGDIR
 "@
 
 Write-Host "==> All jobs finished. Logs in $JobLogDir"

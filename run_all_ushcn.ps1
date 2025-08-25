@@ -8,7 +8,7 @@ $GPU        = 0
 $Obs        = 24
 $BatchSize  = 32
 $Epochs     = 70
-$EarlyStop  = 20
+$EarlyStop  = 30
 $Fn         = "L"
 $BaseLogDir = "runs"
 

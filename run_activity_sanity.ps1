@@ -6,7 +6,7 @@ $GPU = 0
 $LOGBASE = "runs\activity_sanity"
 $OBS_MS = 6000
 $BS = 32
-$EPOCHS = 5
+$EPOCHS = 70
 $PATIENCE = 3
 
 # ---- paths/logs ----

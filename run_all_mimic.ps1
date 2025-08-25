@@ -5,7 +5,7 @@ $ErrorActionPreference = "Stop"
 # ---- knobs ----
 $GPU      = 0
 $BS       = 32
-$EPOCHS   = 5
+$EPOCHS   = 70
 $DATASET  = "mimic"
 $LOGBASE  = "runs\mimic_sanity"
 $TAIL_ERR = 60
