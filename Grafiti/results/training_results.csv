@@ -1,0 +1,2 @@
+timestamp,model,dataset,run_id,epochs,early_stop,batch_size,lr,wd,encoder,attn_head,latent_dim,n_layers,seed,observation_time,best_epoch,val_mse_best,val_rmse_best,train_loss_last_batch,test_mse_best,test_rmse_best
+2025-08-25 00:28:00,GraFITi-gratif,mimic,9327523,5,15,32,0.001,0.0,gratif,4,128,2,0,24,4,0.00745241235862313,0.08632741371443448,0.007620376069098711,0.007719379781256414,0.08786005794020633

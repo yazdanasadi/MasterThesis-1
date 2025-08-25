@@ -4,7 +4,7 @@ $ErrorActionPreference = "Stop"
 # -------------------- GLOBAL SETTINGS --------------------
 $GPU    = 0
 $BS     = 32
-$EPOCHS = 20
+$EPOCHS = 5
 $ES     = 20
 $LR     = 1e-3
 $WD     = 0
@@ -16,6 +16,8 @@ $HP = @{
   "physionet" = @{ ed=64;  ld=32;  nh=8 }
   "mimic"     = @{ ed=32;  ld=128; nh=8 }
   "ushcn"     = @{ ed=32;  ld=64;  nh=4 }
+  "activity"     = @{ ed=32;  ld=64;  nh=4 }
+
 }
 
 # Datasets to run

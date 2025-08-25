@@ -64,7 +64,7 @@ Run-JobAtArgs "FLD_activity" "FLD" "python" @(
   "--gpu",$GPU.ToString(),"--tbon","--logdir",$tb_fld
 )
 
-# ------------------- IC-FLD (no RCF) -------------------
+# ------------------- IC-FLD (no R0CF) -------------------
 $tb_icfld = Join-Path $LOGBASE "ICFLD_activity"
 Run-JobAtArgs "ICFLD_activity" "FLD_ICC" "python" @(
   "train_FLD_ICC.py",

@@ -1,0 +1,2 @@
+C:\Users\yazda\Desktop\MasterThesis-1\FLD_ICC\FLD_ICC.py:149: TracerWarning: Converting a tensor to a Python boolean might cause the trace to be incorrect. We can't record the data flow of Python values, so this value will be treated as a constant in the future. This means that the trace might not generalize to other inputs!
+  assert C == self.C
