@@ -1,2 +1,3 @@
 timestamp,model,dataset,run_id,epochs,early_stop,batch_size,learn_rate,weight_decay,function,embedding_dim_per_head,num_heads,depth,seed,observation_time,best_epoch,val_mse_best,val_rmse_best,train_loss_last_batch,test_mse_best,test_rmse_best
 2025-08-24 23:56:24,FLD,mimic,7564667,5,30,32,0.001,0.0,C,4,2,1,0,24,5,0.00928221820443942,0.09634432108038034,0.009095299057662487,0.009331887268658245,0.09660174568121555
+2025-08-27 02:54:24,FLD,physionet,746293,100,30,32,0.001,0.0,S,4,2,1,0,24,96,0.0036940456222574044,0.06077874317767195,0.003289532847702503,0.0037679456625578775,0.06138367586384736

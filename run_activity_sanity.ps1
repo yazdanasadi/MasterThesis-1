@@ -6,7 +6,7 @@ $GPU = 0
 $LOGBASE = "runs\activity_sanity"
 $OBS_MS = 6000
 $BS = 32
-$EPOCHS = 70
+$EPOCHS = 100
 $PATIENCE = 3
 
 # ---- paths/logs ----
@@ -61,7 +61,7 @@ Run-JobAtArgs "FLD_activity" "FLD" "python" @(
   "train_FLD.py",
   "--dataset","activity","-ot",$OBS_MS.ToString(),"-bs",$BS.ToString(),
   "-e",$EPOCHS.ToString(),"-es",$PATIENCE.ToString(),
-  "--gpu",$GPU.ToString(),"--tbon","--logdir",$tb_fld
+  "--gpu",$GPU.ToString(),"-fn","S","--tbon","--logdir",$tb_fld
 )
 
 # ------------------- IC-FLD (no R0CF) -------------------
@@ -70,7 +70,7 @@ Run-JobAtArgs "ICFLD_activity" "FLD_ICC" "python" @(
   "train_FLD_ICC.py",
   "--dataset","activity","-ot",$OBS_MS.ToString(),"-bs",$BS.ToString(),
   "--epochs",$EPOCHS.ToString(),"--early-stop",$PATIENCE.ToString(),
-  "-fn","L","-ed","64","-ld","64","-nh","2","--depth","2",
+  "-fn","S","-ed","64","-ld","64","-nh","2","--depth","2",
   "--gpu",$GPU.ToString(),"--tbon","--logdir",$tb_icfld
 )
 

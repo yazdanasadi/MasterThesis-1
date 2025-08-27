@@ -3,8 +3,8 @@
 """
 IC-FLD (USHCN) trainer aligned with train_FLD.py CLI & preprocessing.
 - Same flags: -d/-ot/-bs/-e/-es/-lr/-wd/-s/-fn/-ed/-nh/-dp/--gpu/--resume/--tbon/--logdir
-- No cycle options here (kept simple, like FLD).
-- USHCN safety: NaN-safe masked MSE + ensure >=1 observed entry per sample.
+- No cycle options here!!!!!!!!
+- USHCN safety: NaN-safe masked MSE + ensure >=1 observed entry per sample. ><>>>><><><><><>
 """
 
 import argparse, sys, os, time, random, warnings, inspect, glob

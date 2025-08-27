@@ -68,8 +68,8 @@ Early stopping at epoch 88 (no improvement for 10).
 Best val MSE: 0.004129 @ epoch 78
 
 ----------------
-cd FLD_ICC >>> without cycles
-python train_FLD_ICC_ushcn_rcf.py -d ushcn -ot 24 -bs 32 -e 70 -es 20 -fn L -ed 64 -ld 64 -nh 2 -dp 2 --cycle-length 24 --time-max-hours 48  --gpu 0 --tbon --logdir runs --resume auto
+cd FLD_ICC >>> with cycles
+python train_FLD_ICC_ushcn_rcf.py -d ushcn -ot 24 -bs 32 -e 70 -es 20 -fn S -ed 64 -ld 64 -nh 2 -dp 2 --cycle-length 24 --time-max-hours 48  --gpu 0 --tbon --logdir runs --resume auto
 ---------------------
 without cycles
 python train_FLD_ICC_ushcn.py -d ushcn -ot 24 -bs 32 -e 70 -es 20 -fn L -ed 64 -ld 64 -nh 2 -dp 2 --gpu 0 --tbon --logdir runs
@@ -135,3 +135,15 @@ python train_FLD_ICC_ushcn.py -d ushcn -ot 24 -bs 32 -e 70 -es 20 -fn L -ed 64 -
 - Epoch 068 | train_loss(one-batch): 1.868150 | val_mse: 0.721122 | val_rmse: 0.849189 | best@62 test_mse: 0.546659 rmse: 0.739364 | time: 15.09s
 - Epoch 069 | train_loss(one-batch): 0.754152 | val_mse: 0.700942 | val_rmse: 0.837223 | best@62 test_mse: 0.546659 rmse: 0.739364 | time: 15.00s
 - Epoch 070 | train_loss(one-batch): 0.216952 | val_mse: 0.688030 | val_rmse: 0.829475 | best@62 test_mse: 0.546659 rmse: 0.739364 | time: 14.85s
+
+
+
+-------------------------------------------
+USCHN + RCF
+python train_FLD_ICC_ushcn_rcf.py -d ushcn -ot 24 -bs 32 -e 70 -es 20 -lr 1e-3 -wd 0 -fn S -ed 32 -ld 64 -nh 4 -dp 2 --harmonics 2 --cycle-length 24 --time-max-hours 48 --tbon
+
+
+python train_FLD_ICC_ushcn_rcf.py -d ushcn -ot 24 -bs 32 -e 70 -es 20 -lr 1e-3 -wd 0 -fn L -ed 32 -ld 64 -nh 4 -dp 2 --harmonics 1 --cycle-length 1 --tbon 
+python train_FLD_ICC_ushcn_rcf.py -d ushcn -ot 24 -bs 32 -e 70 -es 20 -lr 1e-3 -wd 0 -fn S -ed 32 -ld 64 -nh 4 -dp 2 --harmonics 1 --cycle-length 1 --tbon 
+python train_FLD_ICC_ushcn_rcf.py -d ushcn -ot 24 -bs 32 -e 70 -es 20 -lr 1e-3 -wd 0 -fn L -ed 32 -ld 64 -nh 4 -dp 2 --harmonics 1 --cycle-length 1 --tbon 
+python train_FLD_ICC_ushcn_rcf.py -d ushcn -ot 24 -bs 32 -e 70 -es 20 -lr 1e-3 -wd 0 -fn S -ed 32 -ld 64 -nh 4 -dp 2 --harmonics 1 --cycle-length 1 --tbon 

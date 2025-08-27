@@ -7,9 +7,9 @@ $Dataset    = "ushcn"
 $GPU        = 0
 $Obs        = 24
 $BatchSize  = 32
-$Epochs     = 70
+$Epochs     = 100
 $EarlyStop  = 30
-$Fn         = "L"
+$Fn         = "S"
 $BaseLogDir = "runs"
 
 # Sweep space
@@ -20,13 +20,13 @@ $Depths      = @(2, 4)                  # -dp
 $EmbPerHead  = @(2, 4, 8)               # total embed dim = nh * emb_per_head
 
 # RCF (cycle removal) params
-$CycleLength    = 24
+$CycleLength    = 1
 $TimeMaxHours   = 48
 
 # Trainers (must exist in FLD_ICC/)
 $TrainDir       = "FLD_ICC"
 $NoCycleScript  = "train_FLD_ICC_ushcn.py"
-$RCFScript      = "train_FLD_ICC_ushcn_rcf.py"
+# $RCFScript      = "train_FLD_ICC_ushcn_rcf.py"
 
 # -------------------- PREP ----------------------
 $RepoRoot  = (Get-Location).Path
@@ -78,10 +78,10 @@ if (-not (Test-Path (Join-Path $TrainDir $NoCycleScript))) {
   Write-Error "Missing $TrainDir\$NoCycleScript"
   exit 1
 }
-if (-not (Test-Path (Join-Path $TrainDir $RCFScript))) {
-  Write-Error "Missing $TrainDir\$RCFScript"
-  exit 1
-}
+# if (-not (Test-Path (Join-Path $TrainDir $RCFScript))) {
+#   Write-Error "Missing $TrainDir\$RCFScript"
+#   exit 1
+# }
 
 Write-Host "==> IC-FLD USHCN sweep starting (GPU=$GPU)"
 Write-Host "==> Logs: $JobLogDir"

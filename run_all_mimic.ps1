@@ -1,13 +1,14 @@
-# run_all_mimic.ps1  — sanity run (exactly 5 epochs)
+# run_all_mimic.ps1
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 # ---- knobs ----
 $GPU      = 0
 $BS       = 32
-$EPOCHS   = 70
+$EPOCHS   = 100
 $DATASET  = "mimic"
-$LOGBASE  = "runs\mimic_sanity"
+$FN       = "S"          # (L | S | C | Q)
+$LOGBASE  = "runs\mimic_final"
 $TAIL_ERR = 60
 $HEAD_ERR = 40
 
@@ -35,7 +36,7 @@ $TempDir = [System.IO.Path]::GetTempPath()
 function Get-HelpText {
   param([string]$ScriptPath, [string]$WorkDir)
 
-  $base   = [System.IO.Path]::GetFileNameWithoutExtension($ScriptPath)
+  $base    = [System.IO.Path]::GetFileNameWithoutExtension($ScriptPath)
   $outPath = Join-Path $TempDir ("help_{0}.out.txt" -f $base)
   $errPath = Join-Path $TempDir ("help_{0}.err.txt" -f $base)
 
@@ -74,16 +75,19 @@ function Start-ModelJob {
   $WorkDir   = Split-Path -Parent $ScriptPath
   $HelpText  = Get-HelpText -ScriptPath $ScriptPath -WorkDir $WorkDir
 
-  $flagDataset = Find-Flag -HelpText $HelpText -Candidates @("--dataset","--dataset_name","--data","--dset")
-  $flagEpochs  = Find-Flag -HelpText $HelpText -Candidates @("--epochs","--num_epochs","--max_epochs")
-  $flagBS      = Find-Flag -HelpText $HelpText -Candidates @("--batch_size","--batchsize","--bs","-b")
+  $flagDataset = Find-Flag -HelpText $HelpText -Candidates @("--dataset","--dataset_name","--data","--dset","-d")
+  $flagEpochs  = Find-Flag -HelpText $HelpText -Candidates @("--epochs","--num_epochs","--max_epochs","-e")
+  $flagBS      = Find-Flag -HelpText $HelpText -Candidates @("--batch_size","--batchsize","--bs","-b","--batch-size")
   $flagGPU     = Find-Flag -HelpText $HelpText -Candidates @("--gpu","--device","--cuda","--gpus")
+  # NEW: function flag (IC-FLD* and friends)
+  $flagFunc    = Find-Flag -HelpText $HelpText -Candidates @("--function","-fn","--fn")
 
   $args = @($ScriptPath)
   if ($flagDataset) { $args += @($flagDataset, $DATASET) }
   if ($flagEpochs)  { $args += @($flagEpochs,  $EPOCHS.ToString()) }
   if ($flagBS)      { $args += @($flagBS,      $BS.ToString()) }
   if ($flagGPU)     { $args += @($flagGPU,     $GPU.ToString()) }
+  if ($flagFunc)    { $args += @($flagFunc,    $FN) }
 
   $outLog = Join-Path $JobLogDir ("{0}_{1}.out.log" -f $Name,$DateTag)
   $errLog = Join-Path $JobLogDir ("{0}_{1}.err.log" -f $Name,$DateTag)
@@ -123,7 +127,7 @@ function Start-ModelJob {
   }
 }
 
-# ---- your exact training script paths ----
+# ----  exact training script paths ----
 $MODELS = @(
   @{ Name = "FLD";       Script = (Join-Path $ScriptRoot "FLD\train_FLD.py") },
   @{ Name = "IC-FLD";    Script = (Join-Path $ScriptRoot "FLD_ICC\train_FLD_ICC.py") },
@@ -136,6 +140,7 @@ Write-Host "======= MIMIC sanity run =======" -ForegroundColor Green
 Write-Host ("GPU           : {0}" -f $GPU)
 Write-Host ("Batch size    : {0}" -f $BS)
 Write-Host ("Epochs        : {0}" -f $EPOCHS)
+Write-Host ("Function (-fn): {0}" -f $FN)
 Write-Host ("Log base      : {0}" -f $LOGBASE)
 Write-Host ("Job log dir   : {0}" -f $JobLogDir)
 Write-Host "=================================" -ForegroundColor Green
@@ -144,4 +149,4 @@ foreach ($m in $MODELS) {
   Start-ModelJob -Name $m.Name -ScriptPath $m.Script
 }
 
-Write-Host "All MIMIC sanity jobs finished."
+Write-Host "All MIMIC jobs finished."

@@ -1,0 +1,20 @@
+C:\Users\yazda\Desktop\MasterThesis-1\FLD_ICC\FLD_ICC.py:151: TracerWarning: Converting a tensor to a Python number might cause the trace to be incorrect. We can't record the data flow of Python values, so this value will be treated as a constant in the future. This means that the trace might not generalize to other inputs!
+  C = C.item()
+Traceback (most recent call last):
+  File "C:\Users\yazda\Desktop\MasterThesis-1\FLD_ICC\train_FLD_ICC_ushcn.py", line 234, in <module>
+    b = utils.get_next_batch(data_obj["train_dataloader"])
+  File "C:\Users\yazda\Desktop\MasterThesis-1\lib\utils.py", line 214, in get_next_batch
+    data_dict = dataloader.__next__()
+  File "C:\Users\yazda\Desktop\MasterThesis-1\lib\utils.py", line 72, in inf_generator
+    yield iterator.__next__()
+  File "C:\Users\yazda\Miniconda3\envs\thesis\lib\site-packages\torch\utils\data\dataloader.py", line 634, in __next__
+    data = self._next_data()
+  File "C:\Users\yazda\Miniconda3\envs\thesis\lib\site-packages\torch\utils\data\dataloader.py", line 678, in _next_data
+    data = self._dataset_fetcher.fetch(index)  # may raise StopIteration
+  File "C:\Users\yazda\Miniconda3\envs\thesis\lib\site-packages\torch\utils\data\_utils\fetch.py", line 54, in fetch
+    return self.collate_fn(data)
+  File "C:\Users\yazda\Desktop\MasterThesis-1\lib\parse_datasets.py", line 125, in <lambda>
+    collate_fn= lambda batch: collate_fn(batch, args, device, time_max = time_max))
+  File "C:\Users\yazda\Desktop\MasterThesis-1\lib\ushcn.py", line 245, in USHCN_variable_time_collate_fn
+    observed_data.append(vals[:n_observed_tp])
+KeyboardInterrupt

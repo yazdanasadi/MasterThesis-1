@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-# ---------- Multi-head attention over flattened (time x channel) memory ----------
+# Multi-head attention over flattened (time x channel) memory
 class FLDAttention(nn.Module):
     def __init__(self, embed_dim: int, out_dim: int, num_heads: int = 2):
         super().__init__()
@@ -136,6 +136,7 @@ class IC_FLD(nn.Module):
         return c_in, base
 
     # ---- forward ----
+    
     def forward(self, timesteps, X, M, y_times, denorm_time_max: Optional[float] = None):        
         """
         timesteps: [B,T]   normalized to [0,1]
@@ -146,6 +147,8 @@ class IC_FLD(nn.Module):
         returns: [B,Ty,C]
         """
         B, T, C = X.shape
+        if isinstance(C, torch.Tensor):
+            C = C.item()
         assert C == self.C
 
         # (optional) periodic residual on physical timeline

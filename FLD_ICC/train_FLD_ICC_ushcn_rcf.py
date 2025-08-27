@@ -1,10 +1,20 @@
 #!/usr/bin/env python
 # coding: utf-8
 """
-IC-FLD (USHCN) trainer with Residual Cycle Forecasting (RCF) ALWAYS ON.
-- Same feel as your no-cycle USHCN trainer.
-- Extra flags: --cycle-length, --time-max-hours
-- Passes denorm_time_max to the model forward every time.
+IC-FLD (USHCN) trainer with Residual Cycle Forecasting (RCF) flags (model-side),
+now optimized for faster epochs:
+
+- New flags:
+    --steps-per-epoch   Limit training iterations per epoch (0=all)
+    --val-steps         Limit validation batches per eval (0=all)
+    --test-steps        Limit test batches for best checkpoints (0=all)
+    --eval-every        Run validation/testing every K epochs
+
+- Speed ups:
+    * Mixed precision (AMP) on CUDA
+    * TF32 enabled on Ampere+ GPUs
+    * Optional capped steps for train/val/test to reduce per-epoch time
+
 """
 
 import argparse, sys, os, time, random, warnings, inspect, glob
@@ -40,6 +50,8 @@ except Exception:
 
 # ---------------- CLI ----------------
 p = argparse.ArgumentParser(description="IC-FLD (USHCN) with residual cycle removal (RCF)")
+
+# standard
 p.add_argument("-r", "--run_id", default=None, type=str)
 p.add_argument("-e", "--epochs", default=300, type=int)
 p.add_argument("-es", "--early-stop", default=30, type=int)
@@ -49,7 +61,7 @@ p.add_argument("-wd", "--weight-decay", default=0.0, type=float)
 p.add_argument("-s", "--seed", default=0, type=int)
 
 p.add_argument("-d", "--dataset", default="ushcn", type=str,
-               help="physionet | mimic | ushcn | activity (use ushcn here)")
+               help="physionet | mimic | ushcn | activity")
 p.add_argument("-ot", "--observation-time", default=24, type=int, help="history window length")
 
 # model hyperparams (parity with your no-cycle script)
@@ -59,14 +71,23 @@ p.add_argument("-nh", "--num-heads", default=2, type=int)
 p.add_argument("-ld", "--latent-dim", default=64, type=int)
 p.add_argument("-dp", "--depth", default=2, type=int)
 
-# RCF params (ALWAYS used)
-p.add_argument("--cycle-length", type=int, default=24, help="cycle length in hours")
-p.add_argument("--time-max-hours", type=int, default=48, help="max hours range that timestamps were scaled to")
+# RCF params (passed to model if supported)
+p.add_argument("--cycle-length", type=float, default=24.0, help="cycle length (model-side, if used)")
+p.add_argument("--time-max-hours", type=float, default=48.0, help="max hours range that timestamps were scaled to")
 
+# perf flags
+p.add_argument("--steps-per-epoch", type=int, default=0,
+               help="Limit training iterations per epoch (0=use all batches)")
+p.add_argument("--val-steps", type=int, default=0,
+               help="Limit validation batches per eval (0=use all)")
+p.add_argument("--test-steps", type=int, default=0,
+               help="Limit test batches for best checkpoint logging (0=use all)")
+p.add_argument("--eval-every", type=int, default=1,
+               help="Run validation/testing every K epochs")
+
+# misc
 p.add_argument("--gpu", default="0", type=str)
 p.add_argument("--resume", default="", type=str, help="'auto' or path to a .pt checkpoint")
-
-# TensorBoard
 p.add_argument("--tbon", action="store_true", help="Enable TensorBoard logging")
 p.add_argument("--logdir", type=str, default="runs", help="TensorBoard log root")
 
@@ -75,6 +96,19 @@ args = p.parse_args()
 # ---------------- Setup ----------------
 os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+# Speed boosts on modern NVIDIA GPUs
+if torch.cuda.is_available():
+    try:
+        torch.backends.cuda.matmul.allow_tf32 = True
+        torch.backends.cudnn.allow_tf32 = True
+        torch.set_float32_matmul_precision("medium")
+    except Exception:
+        pass
+
+use_amp = (DEVICE.type == "cuda")
+scaler = torch.cuda.amp.GradScaler(enabled=use_amp)
+
 torch.backends.cudnn.benchmark = True
 warnings.filterwarnings("ignore", category=UserWarning, module="torch")
 torch.manual_seed(args.seed); random.seed(args.seed); np.random.seed(args.seed)
@@ -118,6 +152,10 @@ print("PID, device:", os.getpid(), DEVICE)
 print(f"Dataset={dataset_name}, INPUT_DIM={INPUT_DIM}, history={pd_args.history}")
 print("n_train_batches:", num_train_batches)
 
+# compute effective steps per epoch
+train_steps = num_train_batches if args.steps_per_epoch in (None, 0) else min(num_train_batches, int(args.steps_per_epoch))
+print(f"train_steps_per_epoch: {train_steps} (of {num_train_batches})")
+
 # ---------------- Model ----------------
 sig = inspect.signature(IC_FLD.__init__)
 accepts = set(sig.parameters.keys())
@@ -129,7 +167,7 @@ kw = dict(
     function=args.function,
 )
 if "depth"          in accepts: kw["depth"] = args.depth
-if "use_cycle"      in accepts: kw["use_cycle"] = True                 # <— force cycle mode
+if "use_cycle"      in accepts: kw["use_cycle"] = True
 if "cycle_length"   in accepts: kw["cycle_length"] = args.cycle_length
 if "time_max_hours" in accepts: kw["time_max_hours"] = args.time_max_hours
 
@@ -173,10 +211,12 @@ def batch_to_icfld(batch: dict, input_dim: int, device: torch.device):
     T, X, M = _ushcn_safe_context(T, X, M)
     return T, X, M, TY, Y, YM
 
+# ---------------- Eval with step cap ----------------
 @torch.no_grad()
-def evaluate(loader, nbatches):
+def evaluate(loader, nbatches, max_steps=0):
     total = 0.0; cnt = 0.0
-    for _ in range(nbatches):
+    steps = nbatches if max_steps in (None, 0) else min(nbatches, int(max_steps))
+    for _ in range(steps):
         b = utils.get_next_batch(loader)
         T, X, M, TY, Y, YM = batch_to_icfld(b, INPUT_DIM, DEVICE)
         YH = MODEL(T, X, M, TY, denorm_time_max=args.time_max_hours)
@@ -198,7 +238,8 @@ if args.tbon:
     try:
         b0 = utils.get_next_batch(data_obj["train_dataloader"])
         T0, X0, M0, TY0, _, _ = batch_to_icfld(b0, INPUT_DIM, DEVICE)
-        writer.add_graph(MODEL, (T0, X0, M0, TY0,))  # graph without denorm arg for TB
+        # Avoid extra kwargs in graph if your forward doesn't accept them
+        writer.add_graph(MODEL, (T0, X0, M0, TY0,))
     except Exception as e:
         print(f"[tbgraph] skipped: {e}")
 
@@ -232,31 +273,65 @@ for epoch in range(start_epoch, args.epochs + 1):
     MODEL.train()
     last_train_loss = None
 
-    for _ in range(num_train_batches):
+    for _ in range(train_steps):
         optimizer.zero_grad(set_to_none=True)
         b = utils.get_next_batch(data_obj["train_dataloader"])
         T, X, M, TY, Y, YM = batch_to_icfld(b, INPUT_DIM, DEVICE)
-        YH = MODEL(T, X, M, TY, denorm_time_max=args.time_max_hours)
-        loss = mse_masked(Y, YH, YM)
-        loss.backward(); optimizer.step()
+
+        # AMP forward/backward
+        with torch.cuda.amp.autocast(enabled=use_amp):
+            YH = MODEL(T, X, M, TY, denorm_time_max=args.time_max_hours)
+            loss = mse_masked(Y, YH, YM)
+
+        scaler.scale(loss).backward()
+        scaler.step(optimizer)
+        scaler.update()
+
         last_train_loss = float(loss.item())
 
+    # Eval cadence (can skip some epochs)
     MODEL.eval()
-    val_res = evaluate(data_obj["val_dataloader"], data_obj["n_val_batches"])
+    do_eval = (epoch % max(1, args.eval_every) == 0) or (epoch == start_epoch)
 
-    if val_res["mse"] < best_val:
-        best_val = val_res["mse"]; best_iter = epoch
-        test_report = evaluate(data_obj["test_dataloader"], data_obj["n_test_batches"])
-        torch.save({
-            "state_dict": MODEL.state_dict(),
-            "optimizer": optimizer.state_dict(),
-            "epoch": epoch,
-            "best_val": best_val,
-            "best_iter": best_iter,
-            "args": vars(args),
-            "input_dim": INPUT_DIM,
-        }, ckpt_best)
+    if do_eval:
+        val_res = evaluate(
+            data_obj["val_dataloader"],
+            data_obj["n_val_batches"],
+            max_steps=args.val_steps
+        )
 
+        if val_res["mse"] < best_val:
+            best_val = val_res["mse"]; best_iter = epoch
+            test_report = evaluate(
+                data_obj["test_dataloader"],
+                data_obj["n_test_batches"],
+                max_steps=args.test_steps
+            )
+            torch.save({
+                "state_dict": MODEL.state_dict(),
+                "optimizer": optimizer.state_dict(),
+                "epoch": epoch,
+                "best_val": best_val,
+                "best_iter": best_iter,
+                "args": vars(args),
+                "input_dim": INPUT_DIM,
+            }, ckpt_best)
+    else:
+        val_res = {"loss": float("nan"), "mse": float("nan"), "rmse": float("nan")}
+
+    # Step LR scheduler with last computed validation loss if available
+    if not np.isnan(val_res["loss"]):
+        scheduler.step(val_res["loss"])
+
+    dt = time.time() - t0
+    msg = (f"- Epoch {epoch:03d} | train_loss(one-batch): {last_train_loss:.6f} | "
+           f"val_mse: {val_res['mse']:.6f} | val_rmse: {val_res['rmse']:.6f} | ")
+    if test_report:
+        msg += f"best@{best_iter} test_mse: {test_report['mse']:.6f} rmse: {test_report['rmse']:.6f} | "
+    msg += f"time: {dt:.2f}s"
+    print(msg)
+
+    # Always save a latest checkpoint
     torch.save({
         "state_dict": MODEL.state_dict(),
         "optimizer": optimizer.state_dict(),
@@ -267,22 +342,17 @@ for epoch in range(start_epoch, args.epochs + 1):
         "input_dim": INPUT_DIM,
     }, ckpt_last)
 
-    scheduler.step(val_res["loss"])
-
-    dt = time.time() - t0
-    print(f"- Epoch {epoch:03d} | train_loss(one-batch): {last_train_loss:.6f} | "
-          f"val_mse: {val_res['mse']:.6f} | val_rmse: {val_res['rmse']:.6f} | "
-          + (f"best@{best_iter} test_mse: {test_report['mse']:.6f} rmse: {test_report['rmse']:.6f} | " if test_report else "")
-          + f"time: {dt:.2f}s")
-
+    # TB logging
     if writer:
         writer.add_scalar("train/loss_one_batch", last_train_loss, epoch)
-        writer.add_scalar("val/mse",  float(val_res["mse"]),  epoch)
-        writer.add_scalar("val/rmse", float(val_res["rmse"]), epoch)
+        if not np.isnan(val_res["mse"]):
+            writer.add_scalar("val/mse",  float(val_res["mse"]),  epoch)
+            writer.add_scalar("val/rmse", float(val_res["rmse"]), epoch)
         if test_report:
             writer.add_scalar("test/mse_best",  float(test_report["mse"]),  epoch)
             writer.add_scalar("test/rmse_best", float(test_report["rmse"]), epoch)
 
+    # Early stop condition uses best_iter (not every-epoch val), so it still works
     if (epoch - best_iter) >= args.early_stop:
         print(f"Early stopping at epoch {epoch} (no improvement for {args.early_stop}).")
         break

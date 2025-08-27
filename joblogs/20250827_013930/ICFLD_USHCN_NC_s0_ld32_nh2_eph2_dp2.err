@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "C:\Users\yazda\Desktop\MasterThesis-1\FLD_ICC\train_FLD_ICC_ushcn.py", line 109, in <module>
+    data_obj = parse_datasets(pd_args, patch_ts=False)
+  File "C:\Users\yazda\Desktop\MasterThesis-1\lib\parse_datasets.py", line 120, in parse_datasets
+    test_data = USHCN_time_chunk(test_data, args, device)
+  File "C:\Users\yazda\Desktop\MasterThesis-1\lib\ushcn.py", line 137, in USHCN_time_chunk
+    indices = torch.where((tt >= st) & (tt < et))[0]
+KeyboardInterrupt
